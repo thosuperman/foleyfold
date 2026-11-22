@@ -15,6 +15,9 @@ export function stamp(s:number, precise=false) {
  const ms=Math.round(Math.max(0,s)*1000), sec=Math.floor(ms/1000);
  return [Math.floor(sec/60).toString().padStart(2,'0'),(sec%60).toString().padStart(2,'0')].join(':')+(precise?'.'+Math.floor(ms%1000/100):'');
 }
+export function playheadStamp(s:number) {
+ const cs=Math.round(Math.max(0,s)*100);return stamp(Math.floor(cs/100))+'.'+String(cs%100).padStart(2,'0');
+}
 function vttTime(s:number) {
  const ms=Math.round(s*1000),sec=Math.floor(ms/1000);
  return [Math.floor(sec/3600),Math.floor(sec/60)%60,sec%60].map(n=>String(n).padStart(2,'0')).join(':')+'.'+String(ms%1000).padStart(3,'0');
