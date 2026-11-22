@@ -13,10 +13,11 @@ let cues=load(sampleCues),selected=cues[0]?.id;
 const active=()=>cues.find(c=>c.id===selected);
 function persist(){
  try {
-  if(localStorage.getItem(key)!==savedSnapshot){setText('storageStatus','Another tab changed this reel · reload before saving');toast('Another tab saved this reel. This tab’s edits are not saved. Export before reloading.');return;}
+  if(localStorage.getItem(key)!==savedSnapshot){el('backup').hidden=false;setText('storageStatus','Conflicting edits · download a full cue backup before reloading');toast('Another tab saved this reel. Use the full cue backup below to keep every note and draft.');return;}
   const next=JSON.stringify(cues);localStorage.setItem(key,next);savedSnapshot=next;setText('storageStatus','Cue edits saved in this browser');
- }catch{setText('storageStatus','Storage unavailable · export to keep captions');}
+ }catch{el('backup').hidden=false;setText('storageStatus','Storage unavailable · download a full cue backup');}
 }
+listen('backup',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({version:1,reel:name,cues},null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='foleyfold-cue-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('All notes, timings, draft and approved captions downloaded.');});
 window.addEventListener('storage',e=>{if((e.key===key||e.key===null)&&e.newValue!==savedSnapshot){setText('storageStatus','Another tab changed this reel · reload before saving');}});
 function order(){cues.sort((a,b)=>a.start-b.start);}
 function tick(){const t=media.currentTime||0;seek.value=String(t);setText('now',stamp(t));el('needle').style.left=Math.min(99.8,t/duration*100)+'%';
