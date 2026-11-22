@@ -23,11 +23,16 @@ export function cleanSuggestion(raw: string) {
   if (!text || text.length + 2 > 160 || /[\n\r<>\[\]]/.test(text)) throw new Error('The model did not return a single usable caption. Try a shorter note or write your own.');
   return '[' + text + ']';
 }
-export async function deviceAvailability(): Promise<Availability> {
+export async function deviceAvailability(timeoutMs = 3000): Promise<Availability> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const api = (globalThis as {LanguageModel?: {availability(): Promise<string>}}).LanguageModel;
     if (!api) return 'unavailable';
-    const status = await api.availability();
+    const status = await Promise.race([
+      api.availability(),
+      new Promise<string>(resolve => { timer = setTimeout(() => resolve('unknown'), timeoutMs); }),
+    ]);
     return ['available','downloadable','downloading','unavailable'].includes(status) ? status as Availability : 'unknown';
   } catch { return 'unknown'; }
+  finally { clearTimeout(timer); }
 }

@@ -20,3 +20,8 @@ test('brackets count toward the saved-caption limit',()=>{
  assert.throws(()=>cleanSuggestion('a'.repeat(159)));
 });
 test('absence of browser model API is not success',async()=>assert.equal(await deviceAvailability(),'unavailable'));
+test('a pending browser capability check settles without promising a device model', async t => {
+ t.after(()=>{delete globalThis.LanguageModel;});
+ globalThis.LanguageModel={availability:()=>new Promise(()=>{})};
+ assert.equal(await deviceAvailability(10),'unknown');
+});
