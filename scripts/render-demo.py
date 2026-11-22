@@ -49,15 +49,15 @@ def card(kind):
 SHOTS = [
  ("sample",0,3.8,"LAST LIGHT EXPRESS  /  ORIGINAL SOUND","[A station bell rings out.]"),
  ("title",0,0,"01  /  THE PROBLEM","No one spoke. But if the bell goes missing, so does part of the story."),
- ("raw",1.8,9.7,"02  /  THE CUTTING ROOM","Foleyfold gives those sounds a place on the timeline. Select a cue to hear where it belongs."),
- ("raw",9.7,14.4,"03  /  LOCAL IMPORT","Open a local cut. It starts with a clean cue sheet. The file stays on this device."),
- ("raw",14.4,21.8,"04  /  SPOT THE SOUND","Give the bell an in point and an out point. Then write what you hear, not what you see."),
- ("raw",21.8,29.35,"05  /  CAPABILITY CHECK","The assistant checks this browser. Here, Firebase is not connected. No model generated this caption."),
+ ("raw",1.8,11.7,"02  /  THE CUTTING ROOM","Foleyfold gives those sounds a place on the timeline. Select a cue to hear where it belongs."),
+ ("raw",11.7,16.6,"03  /  LOCAL IMPORT","Open a local cut. It starts with a clean cue sheet. The file stays on this device."),
+ ("raw",16.6,24.3,"04  /  SPOT THE SOUND","Give the bell an in point and an out point. Then write what you hear, not what you see."),
+ ("raw",24.3,31.6,"05  /  CAPABILITY CHECK","The assistant checks this browser. Here, Firebase is not connected. No model generated this caption."),
  ("route",0,0,"06  /  FIREBASE AI LOGIC","On a configured studio, only the note and its duration enter the prompt. The default route is device only."),
  ("route",0,0,"06  /  FIREBASE AI LOGIC","The editor can permit cloud fallback for this one request. A returned suggestion names its source and still needs review."),
- ("raw",29.35,36.45,"07  /  HUMAN REVIEW","Here the editor writes the line by hand. Approve it only when it describes the moment."),
- ("raw",36.45,40.85,"08  /  IN CONTEXT","[The bell rings. The approved caption clears at the end of its cue.]"),
- ("raw",40.85,49.65,"09  /  DELIVERY","The export is a timed Web V T T track. Only approved captions leave the cutting room."),
+ ("raw",31.6,39.24,"07  /  HUMAN REVIEW","Here the editor writes the line by hand. Approve it only when it describes the moment."),
+ ("raw",39.24,43.40,"08  /  IN CONTEXT","[The bell rings. The approved caption clears at the end of its cue.]"),
+ ("raw",43.40,50.82,"09  /  DELIVERY","The export is a timed Web V T T track. Only approved captions leave the cutting room."),
  ("close",0,0,"FOLEYFOLD  /  WEB + CHROME","Keep the cut private. Give its sound a voice.")
 ]
 
@@ -90,9 +90,10 @@ def main():
                 txt=tmp/f"voice{i}.txt"
                 txt.write_text(line.replace("Foleyfold","Foley fold").replace("Firebase","Fire base"))
                 run("-f","lavfi","-i",f"flite=textfile={txt}:voice=slt","-af","adelay=280,volume=1.25","-ar",48000,"-ac",2,audio)
+            elif kind=="raw":
+                # Normalize capture packet timestamps before trimming the live playback audio.
+                run("-i",RAW,"-vn","-af",f"aresample=48000:async=1:first_pts=0,atrim=start={start}:end={end},asetpts=PTS-STARTPTS","-ac",2,audio)
             else:
-                # The native capture audio had unreliable packet timestamps.
-                # Use the same original bell cue, aligned to the two playback shots.
                 run("-i",SAMPLE,"-t",end-start,"-vn","-af","volume=0.85","-ar",48000,"-ac",2,audio)
             with wave.open(str(audio)) as f: voice=f.getnframes()/f.getframerate()
             dur=math.ceil(max(voice+(.6 if spoken else 0), end-start)*FPS)/FPS
