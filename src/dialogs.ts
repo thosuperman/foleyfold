@@ -34,8 +34,8 @@ export function cueDetails(cue:Cue,all:Cue[],duration:number,save:(v:Cue)=>void,
  dialog(isNew?'Spot a new sound':'Edit cue', '<label for="cueName">Cue name</label><input id="cueName" type="text" maxlength="64" required><div class="pair"><div><label for="inTime">In · seconds</label><input id="inTime" type="number" min="0" step="0.001"></div><div><label for="outTime">Out · seconds</label><input id="outTime" type="number" min="0" step="0.001"></div></div><p class="hint">Choose a time range without overlapping another cue.</p><p id="formError" class="error" role="status"></p>'+btn('saveDetails',isNew?'Create cue':'Save changes')+(isNew?'':'<button id="deleteCue" class="danger">Delete cue</button>'));
  el<HTMLInputElement>('cueName').value=cue.title;el<HTMLInputElement>('inTime').value=String(+cue.start.toFixed(3));el<HTMLInputElement>('outTime').value=String(+cue.end.toFixed(3));
  listen('saveDetails',()=>{const v={...cue,title:el<HTMLInputElement>('cueName').value.trim(),start:el<HTMLInputElement>('inTime').valueAsNumber,end:el<HTMLInputElement>('outTime').valueAsNumber};
- const issue=validateCue(v,duration,all);if(issue){setText('formError',issue);return;}if(v.start!==cue.start||v.end!==cue.end)v.approved=false;save(v);modal().close();
- if(cue.approved&&!v.approved)toast('Timing changed. Approve the caption again before export.');});
+ const issue=validateCue(v,duration,all);if(issue){setText('formError',issue);return;}if(v.start!==cue.start||v.end!==cue.end)v.approved=false;if(cue.approved&&!v.approved)modal().addEventListener('close',()=>setText('reviewAlert','Timing changed. Approve the caption again before export.'),{once:true});
+ save(v);modal().close();});
  if(!isNew)listen('deleteCue',()=>{
   const confirm=el<HTMLDialogElement>('deleteDialog');
   confirm.returnValue='cancel';

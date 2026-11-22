@@ -57,14 +57,14 @@ function renderRows(){
  if(focusId&&(group===markers||group===rows))Array.from(group.children).find(e=>(e as HTMLElement).dataset.cue===focusId)?.closest('button')?.focus({preventScroll:true});
  setText('tally',cues.filter(c=>c.approved).length+' / '+cues.length+' approved');
 }
-function meta(){const c=active();if(!c)return;setText('charCount',caption.value.length+' / 160');setText('reviewState',c.approved?'Approved for export':'Draft · not in export');el<HTMLButtonElement>('approve').disabled=!c.caption.trim()||c.approved;el('approve').querySelector('span')!.textContent=c.approved?'Caption approved':'Approve caption';}
-function render(){const c=active();el('editing').hidden=!c;el('emptyEditor').hidden=!!c;setText('cueNumber',c?'CUE '+String(cues.indexOf(c)+1).padStart(2,'0')+' / '+String(cues.length).padStart(2,'0'):'NO CUES');
+function meta(){const c=active();if(!c)return;setText('charCount',caption.value.length+' / 160');setText('reviewState',c.approved?'Approved for export':'Draft · approve before export');el<HTMLButtonElement>('approve').disabled=!c.caption.trim()||c.approved;el('approve').querySelector('span')!.textContent=c.approved?'Caption approved':'Approve caption';}
+function render(){setText('reviewAlert','');const c=active();el('editing').hidden=!c;el('emptyEditor').hidden=!!c;setText('cueNumber',c?'CUE '+String(cues.indexOf(c)+1).padStart(2,'0')+' / '+String(cues.length).padStart(2,'0'):'NO CUES');
  if(c){setText('title',c.title);setText('timing',stamp(c.start,true)+'  →  '+stamp(c.end,true)+'   /   '+(c.end-c.start).toFixed(1)+' s');note.value=c.note;caption.value=c.caption;meta();}
  setText('projectName',name);setText('length',stamp(duration));seek.max=String(duration);
  document.querySelector('.ticks')!.replaceChildren(...[0,1,2,3,4].map(n=>{const s=document.createElement('span');s.textContent=stamp(duration*n/4);return s;}));
  document.querySelector('.screen')!.classList.toggle('sample',key===sampleKey);renderRows();drawWave();tick();
 }
-function editText(){const c=active();if(!c)return;const wasApproved=c.approved;updateCueText(c,note.value,caption.value);caption.value=c.caption;persist();meta();renderRows();tick();if(wasApproved&&!c.approved)toast('Caption changed. Approve it again before export.');}
+function editText(){const c=active();if(!c)return;const wasApproved=c.approved;updateCueText(c,note.value,caption.value);caption.value=c.caption;persist();meta();renderRows();tick();if(wasApproved&&!c.approved)setText('reviewAlert','Caption changed. Approve it again before export.');}
 note.oninput=editText;caption.oninput=editText;
 listen('approve',()=>{const c=active();if(!c||!c.caption.trim())return;c.caption=c.caption.trim();c.approved=true;persist();render();toast('Caption approved for export.');});
 listen('assist',()=>{const c=active();if(c)assistant({...c},v=>{if(active()?.id!==c.id)return;caption.value=v;editText();});});
