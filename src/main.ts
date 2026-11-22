@@ -50,7 +50,9 @@ listen('details',()=>{const c=active();if(c)editDetails(c);});
 function add(){if(cues.length>=500){toast('This reel has reached its 500-cue limit.');return;}const gap=nextGap(cues,duration,media.currentTime||0);if(!gap){toast('No free time. Shorten a cue to make room.');return;}media.pause();editDetails({id:crypto.randomUUID(),title:'New sound',start:gap[0],end:gap[1],note:'',caption:'',approved:false},true);}
 listen('add',add);listen('firstCue',add);
 listen('play',()=>{if(media.paused)void media.play().catch(()=>toast('Playback is unavailable. Try a browser-supported clip.'));else media.pause();});
-function updatePlay(){el('play').innerHTML=icon(media.paused?'play':'pause');el('play').setAttribute('aria-label',media.paused?'Play film':'Pause film');}
+let playbackFrame=0;
+function followPlayback(){tick();if(!media.paused&&!media.ended)playbackFrame=requestAnimationFrame(followPlayback);}
+function updatePlay(){cancelAnimationFrame(playbackFrame);followPlayback();el('play').innerHTML=icon(media.paused?'play':'pause');el('play').setAttribute('aria-label',media.paused?'Play film':'Pause film');}
 media.onplay=updatePlay;media.onpause=updatePlay;media.ontimeupdate=tick;media.onseeked=tick;seek.oninput=()=>{media.currentTime=Number(seek.value);tick();};listen('cc',()=>{showCC=!showCC;el('cc').setAttribute('aria-pressed',String(showCC));tick();});listen('mute',()=>{media.muted=!media.muted;el('mute').innerHTML=icon(media.muted?'muted':'sound');el('mute').setAttribute('aria-pressed',String(media.muted));el('mute').setAttribute('aria-label',media.muted?'Unmute sound':'Mute sound');});
 listen('guide',guide);listen('privacy',privacy);listen('export',()=>exportDialog(cues,name));listen('close',()=>modal().close());modal().addEventListener('click',ev=>{if(ev.target===modal()){const r=modal().getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)modal().close();}});
 function openPicker(){el<HTMLInputElement>('file').click();}
