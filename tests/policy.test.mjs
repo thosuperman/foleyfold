@@ -26,3 +26,15 @@ test('a pending browser capability check settles without promising a device mode
  globalThis.LanguageModel={availability:()=>new Promise(()=>{})};
  assert.equal(await deviceAvailability(10),'unknown');
 });
+test('inspector distinguishes configured routes from manual-only editing',async()=>{
+ const {draftOptions}=await import('../src/policy.ts');
+ for(const online of [false,true]){
+  const manual=draftOptions(false,'available',online);
+  assert.equal(manual.action,'AI details');assert.match(manual.status,/disconnected/);assert.match(manual.hint,/Type a sound caption/);
+ }
+ for(const state of ['checking','unavailable','unknown','downloadable','downloading']){
+  assert.equal(draftOptions(true,state,false).action,'AI details');
+  assert.match(draftOptions(true,state,true).status,/Cloud by opt-in/);
+ }
+ assert.match(draftOptions(true,'available',false).status,/Device model available · Cloud offline/);
+});

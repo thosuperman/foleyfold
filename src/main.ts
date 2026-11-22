@@ -4,6 +4,8 @@ import {sampleCues,restore,stamp,nextGap,updateCueText,type Cue} from './cues.ts
 import {icon,paintIcons} from './icons.ts';
 import {el,setText,listen,toast,modal,dialog,btn} from './dom.ts';
 import {assistant,cueDetails,exportDialog,guide,privacy} from './dialogs.ts';
+import {configured} from './inference.ts';
+import {deviceAvailability,draftOptions,type Availability} from './policy.ts';
 const base=import.meta.env.BASE_URL;
 const media=el<HTMLVideoElement>('video'), seek=el<HTMLInputElement>('seek'), note=el<HTMLTextAreaElement>('note'), caption=el<HTMLTextAreaElement>('caption');
 const sampleKey='foleyfold:reel:v1';
@@ -13,6 +15,20 @@ let savedSnapshot:string|null=null;
 function load(initial:Cue[]){try{savedSnapshot=localStorage.getItem(key);return restore(savedSnapshot,initial,duration);}catch{return structuredClone(initial);}}
 let cues=load(sampleCues),selected=cues[0]?.id;
 const active=()=>cues.find(c=>c.id===selected);
+let deviceState:Availability|'checking'='checking',probeVersion=0;
+function showDraftOptions(){
+ const {action,status,hint}=draftOptions(configured,deviceState,navigator.onLine);
+ setText('assistLabel',action);setText('draftStatus',status);setText('draftHint',hint);
+}
+async function checkDraftOptions(){
+ const version=++probeVersion;
+ showDraftOptions();if(!configured)return;
+ const state=await deviceAvailability();
+ if(version===probeVersion){deviceState=state;showDraftOptions();}
+}
+void checkDraftOptions();
+window.addEventListener('online',checkDraftOptions);
+window.addEventListener('offline',checkDraftOptions);
 function persist(){
  try {
   if(localStorage.getItem(key)!==savedSnapshot){el('backup').hidden=false;setText('storageStatus','Conflicting edits · download a full cue backup before reloading');toast('Another tab saved this reel. Use the full cue backup below to keep every note and draft.');return;}

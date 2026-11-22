@@ -11,7 +11,8 @@ export function privacy(){dialog('A private cutting room','<h3>Your footage stay
 let revision=0;
 export function assistant(cue:Cue,apply:(s:string)=>void){
  const session=++revision;const current=()=>session===revision&&modal().open&&!!el('aiState');
- dialog('Draft a sound caption','<p>Turn your listening note into a short caption. The film and its audio never go to the model.</p><div class="infoBox"><p><b>Your listening note</b></p><p id="promptNote"></p></div><p id="deviceState">Checking this device…</p><label class="consent"><input type="checkbox" id="allowCloud"><span>Allow cloud fallback for this note only.</span></label><p id="aiState" role="status"></p>'+btn('runAI','Draft on device')+'<div id="aiResult"></div>');
+ dialog(configured?'Draft a sound caption':'AI drafting is disconnected','<p>AI can draft from your listening note and cue duration. The film and its audio never go to the model.</p><div class="infoBox"><p><b>Your listening note</b></p><p id="promptNote"></p></div><p id="deviceState">Checking this device…</p><label class="consent"><input type="checkbox" id="allowCloud"><span>Allow cloud fallback for this note only.</span></label><p id="aiState" role="status"></p>'+btn('runAI','Draft on device')+'<div id="aiResult"></div><button class="btn" id="writeManually">Write a caption manually</button>');
+ listen('writeManually',()=>{modal().close();el('caption').focus();});
  setText('promptNote',cue.note||'No note yet. Close this panel and describe what you hear.');
  void deviceAvailability().then(status=>{if(current())setText('deviceState','On-device model: '+status+'.');});
  const allow=el<HTMLInputElement>('allowCloud'),run=el<HTMLButtonElement>('runAI');
