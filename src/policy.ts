@@ -3,6 +3,13 @@ export const CLOUD_MODEL = 'gemini-3.5-flash-lite';
 export function inferenceMode(online: boolean, consent: boolean) {
   return online && consent ? 'prefer_on_device' : 'only_on_device';
 }
+export async function permittedMode(online:boolean,consent:boolean,availability=deviceAvailability) {
+  const mode=inferenceMode(online,consent);
+  if(mode==='only_on_device' && !['available','downloadable','downloading'].includes(await availability())) {
+    throw new Error('No usable device model; this note was not sent.');
+  }
+  return mode;
+}
 export function captionPrompt(note: string, seconds: number) {
   if (!note.trim() || note.length > 320 || !Number.isFinite(seconds) || seconds <= 0) throw new Error('Add a listening note and a valid time range first.');
   return [
