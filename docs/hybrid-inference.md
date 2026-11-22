@@ -5,7 +5,7 @@ The model task is **wording one non-speech sound**, not listening to the clip. T
 |---|---|---|
 | No Firebase web config or App Check site key | Disable generation, display explanation; keep manual editing | Not an inference result |
 | Offline or no one-request cloud permission | Fail closed if Prompt API absent/unknown/unavailable; otherwise initialize and call `ONLY_ON_DEVICE` | Never infer provenance from a network toggle |
-| Online + explicit permission | `PREFER_ON_DEVICE` through the SDK; use local when available, otherwise GoogleAIBackend cloud fallback | Checkbox resets after the request |
+| Online + explicit permission | `PREFER_ON_DEVICE` through the SDK; use local when usable, otherwise GoogleAIBackend cloud fallback. A missing, unavailable or timed-out capability result selects the SDK’s ONLY_IN_CLOUD route directly, under the same per-request consent | Checkbox resets after the request |
 | Local setup/download or backend error | Preserve note; show actionable error, allow retry or hand editing | No hardcoded replacement text |
 | Successful SDK response | Read `response.inferenceSource`, show Device/Cloud (or unknown); bound caption length, require review | A returned caption alone is not proof of local execution |
 

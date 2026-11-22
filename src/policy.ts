@@ -5,7 +5,8 @@ export function inferenceMode(online: boolean, consent: boolean) {
 }
 export async function permittedMode(online:boolean,consent:boolean,availability=deviceAvailability) {
   const mode=inferenceMode(online,consent);
-  if(mode==='only_on_device' && !['available','downloadable','downloading'].includes(await availability())) {
+  if(!['available','downloadable','downloading'].includes(await availability())) {
+    if(mode==='prefer_on_device') return 'only_in_cloud';
     throw new Error('No usable device model; this note was not sent.');
   }
   return mode;

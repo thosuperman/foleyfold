@@ -15,7 +15,12 @@ function createAI() {
 let ai: ReturnType<typeof createAI> | undefined;
 export async function draftCaption(note: string, duration: number, consent: boolean, progress: (pct: number) => void) {
   const prompt = captionPrompt(note, duration);
-  const mode = await permittedMode(navigator.onLine, consent) === 'prefer_on_device' ? InferenceMode.PREFER_ON_DEVICE : InferenceMode.ONLY_ON_DEVICE;
+  const route = await permittedMode(navigator.onLine, consent);
+  const mode = {
+    only_on_device: InferenceMode.ONLY_ON_DEVICE,
+    prefer_on_device: InferenceMode.PREFER_ON_DEVICE,
+    only_in_cloud: InferenceMode.ONLY_IN_CLOUD,
+  }[route];
   ai ??= createAI();
   const model = getGenerativeModel(ai, { mode, inCloudParams: { model: CLOUD_MODEL, generationConfig: { maxOutputTokens: 160 } } }, { timeout: 45000 });
   await model.initializeDeviceModel(v => progress(Math.round(v * 100)));
