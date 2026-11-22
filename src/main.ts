@@ -6,7 +6,9 @@ import {el,setText,listen,toast,modal,dialog,btn} from './dom.ts';
 import {assistant,cueDetails,exportDialog,guide,privacy} from './dialogs.ts';
 const base=import.meta.env.BASE_URL;
 const media=el<HTMLVideoElement>('video'), seek=el<HTMLInputElement>('seek'), note=el<HTMLTextAreaElement>('note'), caption=el<HTMLTextAreaElement>('caption');
-let key='foleyfold:reel:v1',name='Last Light Express',duration=18,objectUrl='',waveform:number[]=[],showCC=true;
+const sampleKey='foleyfold:reel:v1';
+let sampleWaveform:number[]=[];
+let key=sampleKey,name='Last Light Express',duration=18,objectUrl='',waveform:number[]=[],showCC=true;
 let savedSnapshot:string|null=null;
 function load(initial:Cue[]){try{savedSnapshot=localStorage.getItem(key);return restore(savedSnapshot,initial,duration);}catch{return structuredClone(initial);}}
 let cues=load(sampleCues),selected=cues[0]?.id;
@@ -44,7 +46,7 @@ function render(){const c=active();el('editing').hidden=!c;el('emptyEditor').hid
  if(c){setText('title',c.title);setText('timing',stamp(c.start,true)+'  →  '+stamp(c.end,true)+'   /   '+(c.end-c.start).toFixed(1)+' s');note.value=c.note;caption.value=c.caption;meta();}
  setText('projectName',name);setText('length',stamp(duration));seek.max=String(duration);
  document.querySelector('.ticks')!.replaceChildren(...[0,1,2,3,4].map(n=>{const s=document.createElement('span');s.textContent=stamp(duration*n/4);return s;}));
- document.querySelector('.screen')!.classList.toggle('sample',!objectUrl);renderRows();drawWave();tick();
+ document.querySelector('.screen')!.classList.toggle('sample',key===sampleKey);renderRows();drawWave();tick();
 }
 function editText(){const c=active();if(!c)return;const wasApproved=c.approved;updateCueText(c,note.value,caption.value);caption.value=c.caption;persist();meta();renderRows();tick();if(wasApproved&&!c.approved)toast('Caption changed. Approve it again before export.');}
 note.oninput=editText;caption.oninput=editText;
@@ -61,15 +63,57 @@ function updatePlay(){cancelAnimationFrame(playbackFrame);followPlayback();el('p
 media.onplay=updatePlay;media.onpause=updatePlay;media.ontimeupdate=tick;media.onseeked=tick;seek.oninput=()=>{media.currentTime=Number(seek.value);tick();};listen('cc',()=>{showCC=!showCC;el('cc').setAttribute('aria-pressed',String(showCC));tick();});listen('mute',()=>{media.muted=!media.muted;el('mute').innerHTML=icon(media.muted?'muted':'sound');el('mute').setAttribute('aria-pressed',String(media.muted));el('mute').setAttribute('aria-label',media.muted?'Unmute sound':'Mute sound');});
 listen('guide',guide);listen('privacy',privacy);listen('export',()=>exportDialog(cues,name));listen('close',()=>modal().close());modal().addEventListener('click',ev=>{if(ev.target===modal()){const r=modal().getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)modal().close();}});
 function openPicker(){el<HTMLInputElement>('file').click();}
-listen('import',()=>{dialog('Open a local clip','<p>Choose a browser-playable audio or video file. It stays on this device. Reopening the same file restores its cue sheet in this browser.</p>'+btn('choose','Choose file')+(objectUrl?' <button class="btn" id="sample">Return to studio sample</button>':''));listen('choose',openPicker);if(objectUrl)listen('sample',()=>location.reload());});
+function clipDuration(url:string):Promise<number> {
+ const probe=document.createElement('video');probe.preload='metadata';
+ return new Promise<number>((resolve,reject)=>{
+  const timeout=setTimeout(()=>reject(new Error('Timed out reading media')),10000);
+  probe.onloadedmetadata=()=>{clearTimeout(timeout);const d=probe.duration;if(Number.isFinite(d)&&d>=.1&&d<=86400)resolve(d);else reject(new Error('Invalid duration'));};
+  probe.onerror=()=>{clearTimeout(timeout);reject(new Error('Unsupported media'));};
+  probe.src=url;
+ }).finally(()=>{probe.onloadedmetadata=null;probe.onerror=null;probe.removeAttribute('src');probe.load();});
+}
 let opening=0;
-el<HTMLInputElement>('file').onchange=async ev=>{const input=ev.target as HTMLInputElement,file=input.files?.[0];input.value='';if(!file)return;
- const attempt=++opening,url=URL.createObjectURL(file),probe=document.createElement('video');probe.preload='metadata';let kept=false;let timer:ReturnType<typeof setTimeout>|undefined;
- try{await new Promise<void>((resolve,reject)=>{timer=setTimeout(()=>reject(new Error()),10000);probe.onloadedmetadata=()=>resolve();probe.onerror=()=>reject(new Error());probe.src=url;});
- if(!Number.isFinite(probe.duration)||probe.duration<.1||probe.duration>86400)throw new Error();
- toast('Identifying the local clip…');const hash=await clipFingerprint(file);if(attempt!==opening)return;
- const old=objectUrl;objectUrl=url;kept=true;key='foleyfold:file:'+hash;duration=probe.duration;name=file.name;media.pause();media.removeAttribute('poster');media.src=url;media.load();if(old)URL.revokeObjectURL(old);waveform=[];cues=load([]);selected=cues[0]?.id;
- setText('filmBadge','LOCAL CLIP');setText('filmType','PRIVATE FILE  /  THIS DEVICE');setText('frameLabel','LOCAL REEL');setText('trackType','CUE TIMING');modal().close();render();toast('Local clip opened.');
- }catch{toast('Could not open this clip. Try a playable MP4, WebM, or audio file under 24 hours.');}finally{clearTimeout(timer);probe.removeAttribute('src');probe.load();if(!kept)URL.revokeObjectURL(url);}
+function switchReel(url:string,reelKey:string,reelName:string,seconds:number) {
+ const old=objectUrl,sample=reelKey===sampleKey;
+ media.pause();objectUrl=url;key=reelKey;name=reelName;duration=seconds;
+ media.removeAttribute('poster');media.src=url;media.load();if(old)URL.revokeObjectURL(old);
+ waveform=sample?sampleWaveform:[];cues=load(sample?sampleCues:[]);selected=cues[0]?.id;
+ setText('filmBadge',sample?'STUDIO SAMPLE':'LOCAL CLIP');
+ setText('filmType',sample?'ORIGINAL SHORT  /  FOLEYFOLD':'PRIVATE FILE  /  THIS DEVICE');
+ setText('frameLabel',sample?'REEL 01':'LOCAL REEL');
+ setText('trackType',sample&&waveform.length?'AMPLITUDE · MONO':'CUE TIMING');
+ modal().close();render();toast(sample?'Studio sample opened.':'Local clip opened.');
+}
+async function returnToSample() {
+ const button=el<HTMLButtonElement>('sample'),status=el('openStatus');
+ const attempt=++opening;
+ if(!navigator.onLine){status.textContent='You’re offline. Your clip is still open. Reconnect to load the studio sample.';return;}
+ button.disabled=true;status.textContent='Loading the studio sample…';
+ let url='';
+ try {
+  const response=await fetch(base+'last-light.mp4',{signal:AbortSignal.timeout(10000)});
+  if(!response.ok)throw new Error('Sample unavailable');
+  url=URL.createObjectURL(await response.blob());
+  const seconds=await clipDuration(url);
+  if(attempt!==opening||!modal().open||!button.isConnected)return;
+  switchReel(url,sampleKey,'Last Light Express',seconds);url='';
+ }catch{if(attempt===opening&&button.isConnected)status.textContent='The studio sample couldn’t load. Your clip and cue sheet are still open.';}
+ finally{if(url)URL.revokeObjectURL(url);button.disabled=false;}
+}
+listen('import',()=>{
+ dialog('Open a local clip','<p>Choose a browser-playable audio or video file. It stays on this device. Reopening the same file restores its cue sheet in this browser.</p>'+btn('choose','Choose file')+(key!==sampleKey?' <button class="btn" id="sample">Return to studio sample</button>':'')+'<p id="openStatus" role="status"></p>');
+ listen('choose',openPicker);if(key!==sampleKey)listen('sample',returnToSample);
+});
+el<HTMLInputElement>('file').onchange=async ev=>{
+ const input=ev.target as HTMLInputElement,file=input.files?.[0];input.value='';if(!file)return;
+ const attempt=++opening,choose=el('choose'),url=URL.createObjectURL(file);let kept=false;
+ try{
+  const seconds=await clipDuration(url);
+  toast('Identifying the local clip…');const hash=await clipFingerprint(file);
+  if(attempt!==opening||!modal().open||!choose?.isConnected)return;
+  switchReel(url,'foleyfold:file:'+hash,file.name,seconds);kept=true;
+ }catch{if(attempt===opening)toast('Could not open this clip. Try a playable MP4, WebM, or audio file under 24 hours.');}
+ finally{if(!kept)URL.revokeObjectURL(url);}
 };
-paintIcons();render();new ResizeObserver(drawWave).observe(el('wave'));void fetch(base+'waveform.json').then(r=>r.json()).then(v=>{if(!objectUrl&&Array.isArray(v)){waveform=v;drawWave();}}).catch(()=>setText('trackType','CUE TIMING'));
+paintIcons();render();new ResizeObserver(drawWave).observe(el('wave'));
+void fetch(base+'waveform.json').then(r=>r.json()).then(v=>{if(Array.isArray(v)){sampleWaveform=v;if(key===sampleKey){waveform=v;setText('trackType','AMPLITUDE · MONO');drawWave();}}}).catch(()=>{if(key===sampleKey)setText('trackType','CUE TIMING');});
