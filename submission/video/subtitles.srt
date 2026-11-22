@@ -1,0 +1,58 @@
+1
+00:00:00,000 --> 00:00:03,760
+[A station bell rings out.]
+
+2
+00:00:03,800 --> 00:00:09,120
+No one spoke. But if the bell goes missing, so does part
+of the story.
+
+3
+00:00:09,160 --> 00:00:17,040
+Foleyfold gives those sounds a place on the timeline.
+Select a cue to hear where it belongs.
+
+4
+00:00:17,080 --> 00:00:23,360
+Open a local cut. It starts with a clean cue sheet. The
+file stays on this device.
+
+5
+00:00:23,400 --> 00:00:30,760
+Give the bell an in point and an out point. Then write
+what you hear, not what you see.
+
+6
+00:00:30,800 --> 00:00:38,320
+The assistant checks this browser. Here, Firebase is not
+connected. No model generated this caption.
+
+7
+00:00:38,360 --> 00:00:45,880
+On a configured studio, only the note and its duration
+enter the prompt. The default route is device only.
+
+8
+00:00:45,920 --> 00:00:53,800
+The editor can permit cloud fallback for this one
+request. A returned suggestion names its source and
+still needs review.
+
+9
+00:00:53,840 --> 00:01:00,920
+Here the editor writes the line by hand. Approve it only
+when it describes the moment.
+
+10
+00:01:00,960 --> 00:01:05,360
+[The bell rings. The approved caption clears at the end
+of its cue.]
+
+11
+00:01:05,400 --> 00:01:14,160
+The export is a timed WebVTT track. Only approved
+captions leave the cutting room.
+
+12
+00:01:14,200 --> 00:01:17,840
+Keep the cut private. Give its sound a voice.
