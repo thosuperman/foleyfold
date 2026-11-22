@@ -20,7 +20,9 @@ export function addAudioPeaks(peaks:number[],seconds:number,channel:Float32Array
 export async function localWaveform(file:Blob,seconds:number,current:()=>boolean) {
  const input=new Input({formats:ALL_FORMATS,source:new BlobSource(file)});
  try{
-  const track=await input.getPrimaryAudioTrack();
+  const tracks=await input.getAudioTracks();
+  if(tracks.length>1)return null;
+  const track=tracks[0];
   if(!track||!await track.canDecode())throw new Error('No decodable audio');
   const peaks=new Array<number>(1024).fill(0);let decoded=false;
   for await(const {buffer,timestamp} of new AudioBufferSink(track).buffers(undefined,seconds)){
