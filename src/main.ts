@@ -1,6 +1,6 @@
 import './styles.css';
 import {clipFingerprint} from './fingerprint.ts';
-import {sampleCues,restore,stamp,nextGap,updateCueText,type Cue} from './cues.ts';
+import {sampleCues,restore,stamp,rangeAtPlayhead,captionsAt,markerLanes,updateCueText,type Cue} from './cues.ts';
 import {icon,paintIcons} from './icons.ts';
 import {el,setText,listen,toast,modal,dialog,btn} from './dom.ts';
 import {assistant,cueDetails,exportDialog,guide,privacy} from './dialogs.ts';
@@ -39,7 +39,7 @@ listen('backup',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({ver
 window.addEventListener('storage',e=>{if((e.key===key||e.key===null)&&e.newValue!==savedSnapshot){setText('storageStatus','Another tab changed this reel · reload before saving');}});
 function order(){cues.sort((a,b)=>a.start-b.start);}
 function tick(){const t=media.currentTime||0;seek.value=String(t);setText('now',stamp(t));el('needle').style.left=Math.min(99.8,t/duration*100)+'%';
- const c=cues.find(c=>c.approved&&t>=c.start&&t<c.end);setText('subtitle',showCC&&c?c.caption:'');}
+ const subtitles=showCC?captionsAt(cues,t):'';if(el('subtitle').textContent!==subtitles)setText('subtitle',subtitles);}
 function drawWave(){const cv=el<HTMLCanvasElement>('wave');const {width,height}=cv.getBoundingClientRect();const ratio=window.devicePixelRatio||1;cv.width=Math.round(width*ratio);cv.height=Math.round(height*ratio);const g=cv.getContext('2d');if(!g)return;g.scale(ratio,ratio);
  const c=active();if(c){g.fillStyle='#efcfb8';g.fillRect(c.start/duration*width,0,(c.end-c.start)/duration*width,height);}
  for(let x=0;x<width;x+=3){const where=x/width;g.fillStyle=c&&where*duration>=c.start&&where*duration<c.end?'#9c5639':'#637967';const v=waveform.length?(waveform[Math.min(waveform.length-1,Math.floor(where*waveform.length))]||0):0;const h=waveform.length?Math.max(1,Math.pow(v,.69)*(height-5)):1;g.fillRect(x,(height-h)/2,1.8,h);}
@@ -50,9 +50,10 @@ function renderRows(){
  const focused=document.activeElement as HTMLElement|null;
  const group=focused?.parentElement;const focusId=focused?.dataset.cue;
  rows.replaceChildren();markers.replaceChildren();
+ const lanes=markerLanes(cues);markers.style.height=(Math.max(0,...lanes)+1)*23+'px';
  cues.forEach((c,i)=>{const on=c.id===selected;const b=document.createElement('button');b.dataset.cue=c.id;b.className='row'+(on?' on':'');b.setAttribute('aria-pressed',String(on));b.innerHTML='<span class="rowno"></span><strong></strong><span class="mono"></span><span class="excerpt"></span><span class="status"></span>'+icon('arrow');
  [String(i+1).padStart(2,'0'),c.title,stamp(c.start,true)+' – '+stamp(c.end,true),c.caption||c.note||'No listening note',c.approved?'APPROVED':'DRAFT'].forEach((v,j)=>b.children[j].textContent=v);b.children[4].classList.toggle('ready',c.approved);b.onclick=()=>select(c.id);rows.append(b);
- const m=document.createElement('button');m.textContent=String(i+1).padStart(2,'0');m.dataset.cue=c.id;m.setAttribute('aria-label',m.textContent+': select '+c.title);m.setAttribute('aria-pressed',String(on));m.className=on?'on':'';m.style.left=c.start/duration*100+'%';m.style.width=(c.end-c.start)/duration*100+'%';m.onclick=()=>select(c.id);markers.append(m);
+ const m=document.createElement('button');m.textContent=String(i+1).padStart(2,'0');m.dataset.cue=c.id;m.setAttribute('aria-label',m.textContent+': select '+c.title);m.setAttribute('aria-pressed',String(on));m.className=on?'on':'';m.style.top=lanes[i]*23+'px';m.style.left=c.start/duration*100+'%';m.style.width=(c.end-c.start)/duration*100+'%';m.onclick=()=>select(c.id);markers.append(m);
  });if(!cues.length){rows.innerHTML='<p class="sheetEmpty">No sounds marked yet. Play the clip and add your first cue.</p>';}
  if(focusId&&(group===markers||group===rows))Array.from(group.children).find(e=>(e as HTMLElement).dataset.cue===focusId)?.closest('button')?.focus({preventScroll:true});
  setText('tally',cues.filter(c=>c.approved).length+' / '+cues.length+' approved');
@@ -68,9 +69,9 @@ function editText(){const c=active();if(!c)return;const wasApproved=c.approved;u
 note.oninput=editText;caption.oninput=editText;
 listen('approve',()=>{const c=active();if(!c||!c.caption.trim())return;c.caption=c.caption.trim();c.approved=true;persist();render();toast('Caption approved for export.');});
 listen('assist',()=>{const c=active();if(c)assistant({...c},v=>{if(active()?.id!==c.id)return;caption.value=v;editText();});});
-function editDetails(c:Cue,isNew=false){cueDetails(c,cues,duration,v=>{if(isNew)cues.push(v);else cues[cues.findIndex(x=>x.id===v.id)]=v;order();persist();select(v.id);},()=>{cues=cues.filter(x=>x.id!==c.id);selected=cues[0]?.id;persist();render();},isNew);}
+function editDetails(c:Cue,isNew=false){cueDetails(c,duration,v=>{if(isNew)cues.push(v);else cues[cues.findIndex(x=>x.id===v.id)]=v;order();persist();select(v.id);},()=>{cues=cues.filter(x=>x.id!==c.id);selected=cues[0]?.id;persist();render();},isNew);}
 listen('details',()=>{const c=active();if(c)editDetails(c);});
-function add(){if(cues.length>=500){toast('This reel has reached its 500-cue limit.');return;}const gap=nextGap(cues,duration,media.currentTime||0);if(!gap){toast('No free time. Shorten a cue to make room.');return;}media.pause();editDetails({id:crypto.randomUUID(),title:'New sound',start:gap[0],end:gap[1],note:'',caption:'',approved:false},true);}
+function add(){if(cues.length>=500){toast('This reel has reached its 500-cue limit.');return;}media.pause();const range=rangeAtPlayhead(duration,media.currentTime||0);if(!range){toast('Less than 0.1 seconds left. Seek earlier to add a cue at the playhead.');return;}editDetails({id:crypto.randomUUID(),title:'New sound',start:range[0],end:range[1],note:'',caption:'',approved:false},true);}
 listen('add',add);listen('firstCue',add);
 listen('play',()=>{if(media.paused)void media.play().catch(()=>toast('Playback is unavailable. Try a browser-supported clip.'));else media.pause();});
 let playbackFrame=0;

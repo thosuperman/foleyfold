@@ -19,10 +19,9 @@ function vttTime(s:number) {
  const ms=Math.round(s*1000),sec=Math.floor(ms/1000);
  return [Math.floor(sec/3600),Math.floor(sec/60)%60,sec%60].map(n=>String(n).padStart(2,'0')).join(':')+'.'+String(ms%1000).padStart(3,'0');
 }
-export function validateCue(c:Cue,duration:number,others:Cue[]) {
+export function validateCue(c:Cue,duration:number) {
  if (!c.title.trim()||c.title.length>64) return 'Give this cue a short name.';
  if (![c.start,c.end,duration].every(Number.isFinite)||c.start<0||c.end>duration+.001||c.end-c.start<.0999) return 'Set an interval of at least 0.1 seconds inside the clip.';
- if(others.some(x=>x.id!==c.id && c.start < x.end && x.start < c.end))return 'This cue overlaps another. Adjust the in or out point.';
  if(c.note.length>320||c.caption.length>160||/[\r\n]/.test(c.caption))return 'Use one caption line (160 characters max) and a note under 321 characters.';
  if(c.approved&&!c.caption.trim())return 'Write a caption before approving it.';
  return '';
@@ -39,17 +38,23 @@ export function restore(raw:string|null,initial:Cue[],duration:number):Cue[] {
   const data:unknown=JSON.parse(raw??'null');if(!Array.isArray(data)||data.length>500)throw new Error();
   const seen=new Set();const accepted:Cue[]=[];
   for(const x of data){
-   if(!x||['id','title','note','caption'].some(k=>typeof x[k]!=='string')||typeof x.approved!=='boolean'||seen.has(x.id)||!x.id||validateCue(x,duration,accepted))throw new Error();
+   if(!x||['id','title','note','caption'].some(k=>typeof x[k]!=='string')||typeof x.approved!=='boolean'||seen.has(x.id)||!x.id||validateCue(x,duration))throw new Error();
    seen.add(x.id);accepted.push(x);
   }
   return accepted.sort((a,b)=>a.start-b.start);
  } catch {return structuredClone(initial);}
 }
-export function nextGap(cues:Cue[],duration:number,at:number):[number,number]|null {
- const sorted=[...cues].sort((a,b)=>a.start-b.start);let start=0;const gaps:[number,number][]=[];
- for(const c of sorted){if(c.start-start>=.1)gaps.push([start,c.start]);start=Math.max(start,c.end);}
- if(duration-start>=.1)gaps.push([start,duration]);
- const gap=gaps.find(([a,b])=>at>=a&&at+.1<=b)??gaps.find(([a])=>a>=at)??gaps[0];
- if(!gap)return null;const a=at>=gap[0]&&at+.1<=gap[1]?at:gap[0];
- return [a,Math.min(gap[1],a+2)];
+export function rangeAtPlayhead(duration:number,at:number):[number,number]|null {
+ const start=Math.round(at*1000), end=Math.min(Math.round(duration*1000),start+2000);
+ return Number.isFinite(end)&&start>=0&&end-start>=100 ? [start/1000,end/1000] : null;
+}
+export function captionsAt(cues:Cue[],t:number) {
+ return cues.filter(c=>c.approved&&t>=c.start&&t<c.end).map(c=>c.caption).join('\n');
+}
+export function markerLanes(sortedCues:Cue[]) {
+ const ends:number[]=[];
+ return sortedCues.map(c=>{
+  const free=ends.findIndex(end=>end<=c.start), lane=free<0?ends.length:free;
+  ends[lane]=c.end;return lane;
+ });
 }

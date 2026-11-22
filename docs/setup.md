@@ -5,7 +5,7 @@ Use Node 24 LTS, npm, and a modern desktop browser. No login, API, or Firebase c
 npm ci
 npm run dev
 ```
-Open the URL printed by Vite. Play **Last Light Express**, select **Passing wheels**, write a sound caption, approve it, and click **Export VTT**. For your own work, choose **Open clip**, select a playable MP4/WebM or audio file, then **Add cue**. Files stay local; the editor stores cue data per file-content fingerprint in browser storage. Keep exports before clearing storage. Video codecs vary by browser. Files under 24 hours and up to 500 nonoverlapping cues are supported; metadata/fingerprinting can take time for large files.
+Open the URL printed by Vite. Play **Last Light Express**, select **Passing wheels**, write a sound caption, approve it, and click **Export VTT**. For your own work, choose **Open clip**, select a playable MP4/WebM or audio file, then **Add cue**. Files stay local; the editor stores cue data per file-content fingerprint in browser storage. Keep exports before clearing storage. Video codecs vary by browser. Files under 24 hours and up to 500 cues (including simultaneous sounds) are supported; metadata/fingerprinting can take time for large files.
 
 ## Connect real hybrid AI
 1. Create a dedicated, non-production **Spark** project in [Firebase Console](https://console.firebase.google.com/). Do not add billing. Register a Web app. In Project settings → General → Your apps, find the web client config.

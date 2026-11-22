@@ -4,7 +4,7 @@ import {btn,dialog,el,listen,modal,setText,toast} from './dom.ts';
 import {stamp,validateCue,webVtt,type Cue} from './cues.ts';
 export function guide(){dialog('Field guide',[
  ['Spot a sound','Play the original film or open your own local video. Click a timeline segment or cue-sheet row to listen from that moment.'],
- ['Describe what matters','Mark an in and out point. Describe the sound you hear, not what you see. Write a concise caption, or ask the hybrid model for a draft.'],
+ ['Describe what matters','Add a cue at the playhead. Its in and out points can overlap another sound. Describe the sound you hear, not what you see. Write a concise caption, or ask the hybrid model for a draft.'],
  ['Review in context','Approve the caption, then replay with CC on. Export VTT downloads only approved lines; unreviewed notes stay here.'],
 ].map(([h,p],i)=>'<div class="guideStep"><span>0'+(i+1)+'</span><div><b>'+h+'</b><p>'+p+'</p></div></div>').join('')+btn('startEditing','Back to the studio'));listen('startEditing',()=>modal().close());}
 export function privacy(){dialog('A private cutting room','<h3>Your footage stays here.</h3><p>Imported clips are opened from your device, never uploaded. Cue notes and captions are saved in this browser, not to an account. Reopen the same file to restore its cues.</p><h3>AI is optional.</h3><p>Only a listening note and cue duration go into the prompt. Device-only mode never sends that prompt to cloud inference. Cloud fallback is a separate choice for each request. When connected, Firebase App Check may contact Google for attestation.</p><h3>On a shared device?</h3><p>Export your work, then clear this site’s browser storage. An open studio can edit offline; a fresh load normally needs a connection.</p>');}
@@ -30,11 +30,11 @@ export function assistant(cue:Cue,apply:(s:string)=>void){
   finally{if(current()){run.disabled=false;allow.disabled=!navigator.onLine;run.textContent='Draft on device';}}
  };
 }
-export function cueDetails(cue:Cue,all:Cue[],duration:number,save:(v:Cue)=>void,remove:()=>void,isNew=false){
- dialog(isNew?'Spot a new sound':'Edit cue', '<label for="cueName">Cue name</label><input id="cueName" type="text" maxlength="64" required><div class="pair"><div><label for="inTime">In · seconds</label><input id="inTime" type="number" min="0" step="0.001"></div><div><label for="outTime">Out · seconds</label><input id="outTime" type="number" min="0" step="0.001"></div></div><p class="hint">Choose a time range without overlapping another cue.</p><p id="formError" class="error" role="status"></p>'+btn('saveDetails',isNew?'Create cue':'Save changes')+(isNew?'':'<button id="deleteCue" class="danger">Delete cue</button>'));
+export function cueDetails(cue:Cue,duration:number,save:(v:Cue)=>void,remove:()=>void,isNew=false){
+ dialog(isNew?'Spot a new sound':'Edit cue', '<label for="cueName">Cue name</label><input id="cueName" type="text" maxlength="64" required><div class="pair"><div><label for="inTime">In · seconds</label><input id="inTime" type="number" min="0" step="0.001"></div><div><label for="outTime">Out · seconds</label><input id="outTime" type="number" min="0" step="0.001"></div></div><p class="hint">'+(isNew?'Starts at the playhead. ':'')+'Cues can overlap when sounds happen together.</p><p id="formError" class="error" role="status"></p>'+btn('saveDetails',isNew?'Create cue':'Save changes')+(isNew?'':'<button id="deleteCue" class="danger">Delete cue</button>'));
  el<HTMLInputElement>('cueName').value=cue.title;el<HTMLInputElement>('inTime').value=String(+cue.start.toFixed(3));el<HTMLInputElement>('outTime').value=String(+cue.end.toFixed(3));
  listen('saveDetails',()=>{const v={...cue,title:el<HTMLInputElement>('cueName').value.trim(),start:el<HTMLInputElement>('inTime').valueAsNumber,end:el<HTMLInputElement>('outTime').valueAsNumber};
- const issue=validateCue(v,duration,all);if(issue){setText('formError',issue);return;}if(v.start!==cue.start||v.end!==cue.end)v.approved=false;if(cue.approved&&!v.approved)modal().addEventListener('close',()=>setText('reviewAlert','Timing changed. Approve the caption again before export.'),{once:true});
+ const issue=validateCue(v,duration);if(issue){setText('formError',issue);return;}if(v.start!==cue.start||v.end!==cue.end)v.approved=false;if(cue.approved&&!v.approved)modal().addEventListener('close',()=>setText('reviewAlert','Timing changed. Approve the caption again before export.'),{once:true});
  save(v);modal().close();});
  if(!isNew)listen('deleteCue',()=>{
   const confirm=el<HTMLDialogElement>('deleteDialog');
