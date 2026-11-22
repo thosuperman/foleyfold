@@ -6,10 +6,17 @@ import {assistant,cueDetails,exportDialog,guide,privacy} from './dialogs.ts';
 const base=import.meta.env.BASE_URL;
 const media=el<HTMLVideoElement>('video'), seek=el<HTMLInputElement>('seek'), note=el<HTMLTextAreaElement>('note'), caption=el<HTMLTextAreaElement>('caption');
 let key='foleyfold:reel:v1',name='Last Light Express',duration=18,objectUrl='',waveform:number[]=[],showCC=true;
-function load(initial:Cue[]){try{return restore(localStorage.getItem(key),initial,duration);}catch{return structuredClone(initial);}}
+let savedSnapshot:string|null=null;
+function load(initial:Cue[]){try{savedSnapshot=localStorage.getItem(key);return restore(savedSnapshot,initial,duration);}catch{return structuredClone(initial);}}
 let cues=load(sampleCues),selected=cues[0]?.id;
 const active=()=>cues.find(c=>c.id===selected);
-function persist(){try{localStorage.setItem(key,JSON.stringify(cues));}catch{setText('storageStatus','Storage unavailable · export to keep captions');}}
+function persist(){
+ try {
+  if(localStorage.getItem(key)!==savedSnapshot){setText('storageStatus','Another tab changed this reel · reload before saving');toast('Another tab saved this reel. This tab’s edits are not saved. Export before reloading.');return;}
+  const next=JSON.stringify(cues);localStorage.setItem(key,next);savedSnapshot=next;setText('storageStatus','Cue edits saved in this browser');
+ }catch{setText('storageStatus','Storage unavailable · export to keep captions');}
+}
+window.addEventListener('storage',e=>{if((e.key===key||e.key===null)&&e.newValue!==savedSnapshot){setText('storageStatus','Another tab changed this reel · reload before saving');}});
 function order(){cues.sort((a,b)=>a.start-b.start);}
 function tick(){const t=media.currentTime||0;seek.value=String(t);setText('now',stamp(t));el('needle').style.left=Math.min(99.8,t/duration*100)+'%';
  const c=cues.find(c=>c.approved&&t>=c.start&&t<c.end);setText('subtitle',showCC&&c?c.caption:'');}
