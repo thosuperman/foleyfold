@@ -1,4 +1,5 @@
 import './styles.css';
+import {clipFingerprint} from './fingerprint.ts';
 import {sampleCues,restore,stamp,nextGap,type Cue} from './cues.ts';
 import {icon,paintIcons} from './icons.ts';
 import {el,setText,listen,toast,modal,dialog,btn} from './dom.ts';
@@ -59,8 +60,8 @@ el<HTMLInputElement>('file').onchange=async ev=>{const input=ev.target as HTMLIn
  const attempt=++opening,url=URL.createObjectURL(file),probe=document.createElement('video');probe.preload='metadata';let kept=false;let timer:ReturnType<typeof setTimeout>|undefined;
  try{await new Promise<void>((resolve,reject)=>{timer=setTimeout(()=>reject(new Error()),10000);probe.onloadedmetadata=()=>resolve();probe.onerror=()=>reject(new Error());probe.src=url;});
  if(!Number.isFinite(probe.duration)||probe.duration<.1||probe.duration>86400)throw new Error();
- const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([file.name,file.size,file.lastModified])));if(attempt!==opening)return;
- const old=objectUrl;objectUrl=url;kept=true;key='foleyfold:file:'+Array.from(new Uint8Array(hash),x=>x.toString(16).padStart(2,'0')).join('');duration=probe.duration;name=file.name;media.pause();media.removeAttribute('poster');media.src=url;media.load();if(old)URL.revokeObjectURL(old);waveform=[];cues=load([]);selected=cues[0]?.id;
+ toast('Identifying the local clip…');const hash=await clipFingerprint(file);if(attempt!==opening)return;
+ const old=objectUrl;objectUrl=url;kept=true;key='foleyfold:file:'+hash;duration=probe.duration;name=file.name;media.pause();media.removeAttribute('poster');media.src=url;media.load();if(old)URL.revokeObjectURL(old);waveform=[];cues=load([]);selected=cues[0]?.id;
  setText('filmBadge','LOCAL CLIP');setText('filmType','PRIVATE FILE  /  THIS DEVICE');setText('frameLabel','LOCAL REEL');setText('trackType','CUE TIMING');modal().close();render();toast('Local clip opened.');
  }catch{toast('Could not open this clip. Try a playable MP4, WebM, or audio file under 24 hours.');}finally{clearTimeout(timer);probe.removeAttribute('src');probe.load();if(!kept)URL.revokeObjectURL(url);}
 };
