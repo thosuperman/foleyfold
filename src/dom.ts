@@ -1,6 +1,6 @@
 import { paintIcons } from './icons.ts';
 export function el<T extends HTMLElement=HTMLElement>(id:string):T {return document.getElementById(id) as T;}
-export function setText(id:string,value:string){el(id).textContent=value;}
+export function setText(id:string,value:string){const target=el(id);if(target.textContent!==value)target.textContent=value;}
 export function listen(id:string,fn:()=>void){el(id).addEventListener('click',fn);}
 let timer:ReturnType<typeof setTimeout>;
 export function toast(msg:string){setText('toast',msg);clearTimeout(timer);timer=setTimeout(()=>setText('toast',''),3600);}
