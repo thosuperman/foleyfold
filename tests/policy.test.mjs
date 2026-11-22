@@ -30,10 +30,10 @@ test('inspector distinguishes configured routes from manual-only editing',async(
  const {draftOptions}=await import('../src/policy.ts');
  for(const online of [false,true]){
   const manual=draftOptions(false,'available',online);
-  assert.equal(manual.action,'AI details');assert.match(manual.status,/disconnected/);assert.match(manual.hint,/Type a sound caption/);
+  assert.equal(manual.canTry,false);assert.match(manual.status,/disconnected/);assert.match(manual.hint,/Type a sound caption/);
  }
  for(const state of ['checking','unavailable','unknown','downloadable','downloading']){
-  assert.equal(draftOptions(true,state,false).action,'AI details');
+  assert.equal(draftOptions(true,state,false).canTry,false);
   assert.match(draftOptions(true,state,true).status,/Cloud by opt-in/);
  }
  assert.match(draftOptions(true,'available',false).status,/Device model available · Cloud offline/);

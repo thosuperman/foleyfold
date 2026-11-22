@@ -17,8 +17,8 @@ let cues=load(sampleCues),selected=cues[0]?.id;
 const active=()=>cues.find(c=>c.id===selected);
 let deviceState:Availability|'checking'='checking',probeVersion=0;
 function showDraftOptions(){
- const {action,status,hint}=draftOptions(configured,deviceState,navigator.onLine);
- setText('assistLabel',action);setText('draftStatus',status);setText('draftHint',hint);
+ const {canTry,status,hint}=draftOptions(configured,deviceState,navigator.onLine);
+ el('assist').hidden=!canTry;setText('draftStatus',status);setText('draftHint',hint);
 }
 async function checkDraftOptions(){
  const version=++probeVersion;

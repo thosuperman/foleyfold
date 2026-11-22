@@ -1,13 +1,13 @@
 export type Availability = 'available' | 'downloadable' | 'downloading' | 'unavailable' | 'unknown';
 export const CLOUD_MODEL = 'gemini-3.5-flash-lite';
 export function draftOptions(connected:boolean, state:Availability|'checking', online:boolean) {
- if(!connected)return {action:'AI details',status:'Manual mode · AI disconnected',hint:'Neither AI route is connected. Type a sound caption below, then approve it.'};
+ if(!connected)return {canTry:false,status:'Manual mode · AI disconnected',hint:'Neither AI route is connected. Nothing was sent. Type a sound caption below, then approve it.'};
  const local={
   checking:'Checking device model',unknown:'Device model not confirmed',unavailable:'Device model unavailable',
   available:'Device model available',downloadable:'Device model needs a download',downloading:'Device model downloading',
  }[state];
  const canTry=state==='available'||online;
- return {action:canTry?'Draft with AI':'AI details',status:local+' · '+(online?'Cloud by opt-in':'Cloud offline'),
+ return {canTry,status:local+' · '+(online?'Cloud by opt-in':'Cloud offline'),
   hint:canTry?'Write a caption below or request a draft to review.':'Type a sound caption below, then approve it.'};
 }
 export function inferenceMode(online: boolean, consent: boolean) {

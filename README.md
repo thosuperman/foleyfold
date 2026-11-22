@@ -16,7 +16,7 @@ npm run dev
 ```
 
 1. Open the URL printed by Vite and play **Last Light Express**. The 18-second sample has four authored spots and one approved caption.
-2. Select **Passing wheels** to seek to its time range. Listen, then write one line in **Sound caption**. **Draft with AI** is an optional wording aid, not automatic sound detection.
+2. Select **Passing wheels** to seek to its time range. Listen, then write one line in **Sound caption**. The inspector shows what can run before you write. In manual mode, type directly into **Sound caption**. On configured editions, **Draft with AI** is an optional wording aid, not automatic sound detection.
 3. **Approve caption**, play it with **CC** enabled, then **Export VTT → Download WebVTT**. Only approved captions are in the file. Editing a line or its timing sends it back to draft.
 4. For your own film use **Open clip** and **Add cue**. Cue sheets restore when you reopen the same file in the same browser profile. Media bytes are not saved or uploaded.
 
