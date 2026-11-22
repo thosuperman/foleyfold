@@ -20,7 +20,7 @@ export function captionPrompt(note: string, seconds: number) {
 }
 export function cleanSuggestion(raw: string) {
   const text = raw.trim().replace(/^\[|\]$/g, '').trim();
-  if (!text || text.length > 160 || /[\n\r<>\[\]]/.test(text)) throw new Error('The model did not return a single usable caption. Try a shorter note or write your own.');
+  if (!text || text.length + 2 > 160 || /[\n\r<>\[\]]/.test(text)) throw new Error('The model did not return a single usable caption. Try a shorter note or write your own.');
   return '[' + text + ']';
 }
 export async function deviceAvailability(): Promise<Availability> {

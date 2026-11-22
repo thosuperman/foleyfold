@@ -15,4 +15,8 @@ test('prompt contains just a bounded note and duration', () => {
 test('unusable model output is never accepted as a caption', () => {
  assert.equal(cleanSuggestion(' [bell rings] '),'[bell rings]'); for(const input of ['','[]','[a]\n[b]','<script>','x'.repeat(161)]) assert.throws(()=>cleanSuggestion(input));
 });
+test('brackets count toward the saved-caption limit',()=>{
+ assert.equal(cleanSuggestion('a'.repeat(158)).length,160);
+ assert.throws(()=>cleanSuggestion('a'.repeat(159)));
+});
 test('absence of browser model API is not success',async()=>assert.equal(await deviceAvailability(),'unavailable'));
