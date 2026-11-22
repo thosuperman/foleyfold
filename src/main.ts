@@ -28,11 +28,15 @@ function drawWave(){const cv=el<HTMLCanvasElement>('wave');const {width,height}=
 }
 function select(id:string,move=true){selected=id;if(move&&active()){media.pause();media.currentTime=active()!.start;}render();}
 function renderRows(){
- const rows=el('rows'),markers=el('markers');rows.replaceChildren();markers.replaceChildren();
- cues.forEach((c,i)=>{const on=c.id===selected;const b=document.createElement('button');b.className='row'+(on?' on':'');b.setAttribute('aria-pressed',String(on));b.innerHTML='<span class="rowno"></span><strong></strong><span class="mono"></span><span class="excerpt"></span><span class="status"></span>'+icon('arrow');
+ const rows=el('rows'),markers=el('markers');
+ const focused=document.activeElement as HTMLElement|null;
+ const group=focused?.parentElement;const focusId=focused?.dataset.cue;
+ rows.replaceChildren();markers.replaceChildren();
+ cues.forEach((c,i)=>{const on=c.id===selected;const b=document.createElement('button');b.dataset.cue=c.id;b.className='row'+(on?' on':'');b.setAttribute('aria-pressed',String(on));b.innerHTML='<span class="rowno"></span><strong></strong><span class="mono"></span><span class="excerpt"></span><span class="status"></span>'+icon('arrow');
  [String(i+1).padStart(2,'0'),c.title,stamp(c.start,true)+' – '+stamp(c.end,true),c.caption||c.note||'No listening note',c.approved?'APPROVED':'DRAFT'].forEach((v,j)=>b.children[j].textContent=v);b.children[4].classList.toggle('ready',c.approved);b.onclick=()=>select(c.id);rows.append(b);
- const m=document.createElement('button');m.textContent=String(i+1).padStart(2,'0');m.setAttribute('aria-label','Select '+c.title);m.setAttribute('aria-pressed',String(on));m.className=on?'on':'';m.style.left=c.start/duration*100+'%';m.style.width=(c.end-c.start)/duration*100+'%';m.onclick=()=>select(c.id);markers.append(m);
+ const m=document.createElement('button');m.textContent=String(i+1).padStart(2,'0');m.dataset.cue=c.id;m.setAttribute('aria-label',m.textContent+': select '+c.title);m.setAttribute('aria-pressed',String(on));m.className=on?'on':'';m.style.left=c.start/duration*100+'%';m.style.width=(c.end-c.start)/duration*100+'%';m.onclick=()=>select(c.id);markers.append(m);
  });if(!cues.length){rows.innerHTML='<p class="sheetEmpty">No sounds marked yet. Play the clip and add your first cue.</p>';}
+ if(focusId&&(group===markers||group===rows))Array.from(group.children).find(e=>(e as HTMLElement).dataset.cue===focusId)?.closest('button')?.focus({preventScroll:true});
  setText('tally',cues.filter(c=>c.approved).length+' / '+cues.length+' approved');
 }
 function meta(){const c=active();if(!c)return;setText('charCount',caption.value.length+' / 160');setText('reviewState',c.approved?'Approved for export':'Draft · not in export');el<HTMLButtonElement>('approve').disabled=!c.caption.trim()||c.approved;el('approve').querySelector('span')!.textContent=c.approved?'Caption approved':'Approve caption';}
