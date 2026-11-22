@@ -1,0 +1,15 @@
+# Copy-ready fields
+- **Name:** Foleyfold
+- **Tagline:** Give the sounds between the words a caption.
+- **Elevator pitch:** A private cutting room for non-speech sound. Spot a bell, hiss or rhythm in your film, turn a listening note into a reviewable caption, and export a timed track without uploading the cut.
+- **Short description:** For independent filmmakers and caption editors. Foleyfold combines local clip playback, a spotting timeline, optional Firebase hybrid wording assistance and an approval-gated WebVTT export.
+- **Platform / category:** Web / Chrome; accessibility, film post-production.
+- **Prize:** Best Web/Chrome; eligible grand prizes subject to organizer review.
+- **Public repository:** https://github.com/thosuperman/foleyfold
+- **Implementation review:** https://github.com/thosuperman/foleyfold/pull/1 (merge before submitting the repository default branch).
+- **Public judging URL:** TODO — use the verified deployment URL from Publish studio after merging. The [organization preview](https://foleyfold--mlarpbwp.preview.devinapps.com) is not a public judging link.
+- **YouTube:** TODO — owner must upload the final reviewed video publicly, in English, then paste its actual watch URL.
+- **Video file and metadata:** [video package](video/); **screens and captions:** [gallery](screenshots/).
+- **Story:** [ready-to-paste narrative](devpost.md). **Install:** [setup](../docs/setup.md). **Evidence / open gates:** [readiness](readiness.md).
+- **Testing instructions for judges:** Open the sample without signing in. Play the film, select Passing wheels, add a concise bracketed caption, approve it, then download WebVTT. Test model generation separately on an attested build using the published inference instructions. No private clip, API secret or payment required for manual editing.
+- **Entrant, team and region:** TODO — entrant supplies accurate identity and confirms eligibility, rights and team membership. Do not submit automatically.
