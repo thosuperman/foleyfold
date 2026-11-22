@@ -98,7 +98,7 @@ function analyzeReel(file:File,seconds:number,url:string){
  pendingWave=pendingWave.then(async()=>{
   if(objectUrl!==url)return;
   try{
-   const peaks=await localWaveform(file,seconds);
+   const peaks=await localWaveform(file,seconds,()=>objectUrl===url);
    if(objectUrl===url){waveform=peaks;setText('trackType','AMPLITUDE · LOCAL AUDIO');drawWave();}
   }catch{if(objectUrl===url)setText('trackType','TIMING ONLY · AUDIO UNAVAILABLE');}
  });

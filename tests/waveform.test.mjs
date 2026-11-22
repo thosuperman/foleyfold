@@ -1,9 +1,10 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {peakEnvelope,canAnalyze} from '../src/waveform.ts';
+import {addAudioPeaks,canAnalyze} from '../src/waveform.ts';
 import {playheadStamp} from '../src/cues.ts';
 test('waveform keeps brief transients from every channel and never invents sound',()=>{
- assert.deepEqual(peakEnvelope([Float32Array.of(0,0,0,0,0),Float32Array.of(0,-1,0,0,.5)],2),[1,.5]);
- assert.deepEqual(peakEnvelope([new Float32Array(2)]),[0,0]);assert.deepEqual(peakEnvelope([]),[]);
+ const peaks=[0,0,0,0];addAudioPeaks(peaks,1,Float32Array.of(0,-1,0,0),8,.5);
+ addAudioPeaks(peaks,1,Float32Array.of(.5),8,.875);assert.deepEqual(peaks,[0,0,1,.5]);
+ addAudioPeaks(peaks,1,Float32Array.of(1,0,0,0),8,-.125);assert.deepEqual(peaks,[0,0,1,.5]);
 });
 test('full audio decode is bounded by file size and clip duration',()=>{
  assert.equal(canAnalyze(32*1024*1024,300),true);assert.equal(canAnalyze(1,301),false);assert.equal(canAnalyze(33*1024*1024,1),false);

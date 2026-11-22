@@ -1,26 +1,34 @@
-// Whole-file decoding is optional: keep long films editable without allocating a full PCM track.
+import {AudioBufferSink,BlobSource,Input,ALL_FORMATS} from 'mediabunny';
+
 export function canAnalyze(bytes:number,seconds:number) {
  return bytes<=32*1024*1024&&seconds<=300;
 }
 
-export function peakEnvelope(channels:Float32Array[],bins=1024) {
- const length=channels[0]?.length??0, count=Math.min(length,bins);
- const peaks=new Array<number>(count).fill(0);
- for(let b=0;b<count;b++){
-  const start=Math.floor(b*length/count),end=Math.floor((b+1)*length/count);
-  for(const channel of channels){
-   let peak=peaks[b];
-   for(let i=start;i<end;i++)peak=Math.max(peak,Math.abs(channel[i]));
-   peaks[b]=peak;
-  }
+export function addAudioPeaks(peaks:number[],seconds:number,channel:Float32Array,rate:number,offset:number) {
+ const framesPerBin=rate*seconds/peaks.length,firstFrame=offset*rate;
+ const first=Math.max(0,Math.floor(firstFrame/framesPerBin));
+ const end=Math.min(peaks.length,Math.ceil((firstFrame+channel.length)/framesPerBin));
+ for(let b=first;b<end;b++){
+  let peak=peaks[b];
+  const from=Math.max(0,Math.ceil(b*framesPerBin-firstFrame));
+  const to=Math.min(channel.length,Math.ceil((b+1)*framesPerBin-firstFrame));
+  for(let i=from;i<to;i++)peak=Math.max(peak,Math.abs(channel[i]));
+  peaks[b]=peak;
  }
- return peaks;
 }
 
-export async function localWaveform(file:Blob,seconds:number) {
- const context=new OfflineAudioContext(1,1,8000);
- const audio=await context.decodeAudioData(await file.arrayBuffer());
- // A detached or shorter audio track has no reliable placement on the video timeline.
- if(Math.abs(audio.duration-seconds)>.15)throw new Error('Audio and video timelines differ');
- return peakEnvelope(Array.from({length:audio.numberOfChannels},(_,c)=>audio.getChannelData(c)));
+export async function localWaveform(file:Blob,seconds:number,current:()=>boolean) {
+ const input=new Input({formats:ALL_FORMATS,source:new BlobSource(file)});
+ try{
+  const track=await input.getPrimaryAudioTrack();
+  if(!track||!await track.canDecode())throw new Error('No decodable audio');
+  const peaks=new Array<number>(1024).fill(0);let decoded=false;
+  for await(const {buffer,timestamp} of new AudioBufferSink(track).buffers(undefined,seconds)){
+   if(!current())throw new Error('Reel changed');
+   for(let c=0;c<buffer.numberOfChannels;c++)addAudioPeaks(peaks,seconds,buffer.getChannelData(c),buffer.sampleRate,timestamp);
+   decoded=true;
+  }
+  if(!decoded)throw new Error('Empty audio track');
+  return peaks;
+ }finally{input.dispose();}
 }

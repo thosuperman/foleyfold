@@ -15,7 +15,8 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
-    "firebase": "13.4.0"
+    "firebase": "13.4.0",
+    "mediabunny": "1.33.0"
   },
   "devDependencies": {
     "eslint": "10.15.0",
