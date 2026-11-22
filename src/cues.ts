@@ -1,4 +1,10 @@
 export interface Cue { id: string; title: string; start: number; end: number; note: string; caption: string; approved: boolean }
+export function updateCueText(cue:Cue, note:string, caption:string) {
+ const line=caption.replace(/[\r\n]+/g,' ');
+ if(line!==cue.caption)cue.approved=false;
+ cue.note=note;
+ cue.caption=line;
+}
 export const sampleCues: Cue[] = [
  {id:'bell', title:'Platform bell', start:0, end:3.8, note:'A bright station bell strikes several times, each ring fading into the next.', caption:'[a station bell rings out]', approved:true},
  {id:'rail', title:'Passing wheels', start:4.2, end:9.7, note:'Pairs of low metallic knocks repeat in a steady rhythm.', caption:'', approved:false},

@@ -1,5 +1,15 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {sampleCues,validateCue,webVtt,restore,nextGap,stamp} from '../src/cues.ts';
+import {sampleCues,validateCue,webVtt,restore,nextGap,stamp,updateCueText} from '../src/cues.ts';
+test('editing private notes preserves approval; changing exported text requires review',()=>{
+ const cue={...sampleCues[0]};
+ const exported=webVtt([cue]);
+ updateCueText(cue,'A revised listening note',cue.caption);
+ assert.equal(cue.approved,true);
+ assert.equal(webVtt([cue]),exported);
+ updateCueText(cue,cue.note,'[another sound]');
+ assert.equal(cue.approved,false);
+ assert.throws(()=>webVtt([cue]));
+});
 test('editor → approval → sorted, escaped VTT',()=>{
  const c={...sampleCues[1],caption:'[click & <snap>]',approved:true};
  assert.equal(validateCue(c,18,sampleCues),'');const text=webVtt([c,...sampleCues.filter(x=>x.id!==c.id)]);

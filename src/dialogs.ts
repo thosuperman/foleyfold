@@ -11,13 +11,13 @@ export function privacy(){dialog('A private cutting room','<h3>Your footage stay
 let revision=0;
 export function assistant(cue:Cue,apply:(s:string)=>void){
  const session=++revision;const current=()=>session===revision&&modal().open&&!!el('aiState');
- dialog('Draft a sound caption','<p>Turn your listening note into a short caption. The film and its audio never go to the model.</p><div class="infoBox"><p><b>Note to send</b></p><p id="promptNote"></p></div><p id="deviceState">Checking this device…</p><label class="consent"><input type="checkbox" id="allowCloud"><span>Allow cloud fallback for this note only.</span></label><p id="aiState" role="status"></p>'+btn('runAI','Draft on device')+'<div id="aiResult"></div>');
+ dialog('Draft a sound caption','<p>Turn your listening note into a short caption. The film and its audio never go to the model.</p><div class="infoBox"><p><b>Your listening note</b></p><p id="promptNote"></p></div><p id="deviceState">Checking this device…</p><label class="consent"><input type="checkbox" id="allowCloud"><span>Allow cloud fallback for this note only.</span></label><p id="aiState" role="status"></p>'+btn('runAI','Draft on device')+'<div id="aiResult"></div>');
  setText('promptNote',cue.note||'No note yet. Close this panel and describe what you hear.');
  void deviceAvailability().then(status=>{if(current())setText('deviceState','On-device model: '+status+'.');});
  const allow=el<HTMLInputElement>('allowCloud'),run=el<HTMLButtonElement>('runAI');
  const possible=configured&&!!cue.note.trim();
  run.disabled=!possible;allow.disabled=!possible||!navigator.onLine;
- setText('aiState',!configured?'Firebase isn’t connected in this edition. Manual captioning and export are available.':!cue.note.trim()?'Add a listening note first.':'Nothing is sent until you request a draft.');
+ setText('aiState',!configured?'Nothing was sent. Firebase isn’t connected in this edition. Manual captioning and export are available.':!cue.note.trim()?'Add a listening note first.':'Nothing is sent until you request a draft.');
  allow.onchange=()=>{run.textContent=allow.checked?'Draft with fallback':'Draft on device';};
  run.onclick=async()=>{
   const consent=allow.checked;run.disabled=true;allow.checked=false;allow.disabled=true;run.textContent='Drafting…';setText('aiState','Preparing the model. The first download can take several minutes.');el('aiResult').replaceChildren();

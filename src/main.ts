@@ -1,6 +1,6 @@
 import './styles.css';
 import {clipFingerprint} from './fingerprint.ts';
-import {sampleCues,restore,stamp,nextGap,type Cue} from './cues.ts';
+import {sampleCues,restore,stamp,nextGap,updateCueText,type Cue} from './cues.ts';
 import {icon,paintIcons} from './icons.ts';
 import {el,setText,listen,toast,modal,dialog,btn} from './dom.ts';
 import {assistant,cueDetails,exportDialog,guide,privacy} from './dialogs.ts';
@@ -46,7 +46,7 @@ function render(){const c=active();el('editing').hidden=!c;el('emptyEditor').hid
  document.querySelector('.ticks')!.replaceChildren(...[0,1,2,3,4].map(n=>{const s=document.createElement('span');s.textContent=stamp(duration*n/4);return s;}));
  document.querySelector('.screen')!.classList.toggle('sample',!objectUrl);renderRows();drawWave();tick();
 }
-function editText(){const c=active();if(!c)return;c.note=note.value;c.caption=caption.value.replace(/[\r\n]+/g,' ');caption.value=c.caption;c.approved=false;persist();meta();renderRows();tick();}
+function editText(){const c=active();if(!c)return;const wasApproved=c.approved;updateCueText(c,note.value,caption.value);caption.value=c.caption;persist();meta();renderRows();tick();if(wasApproved&&!c.approved)toast('Caption changed. Approve it again before export.');}
 note.oninput=editText;caption.oninput=editText;
 listen('approve',()=>{const c=active();if(!c||!c.caption.trim())return;c.caption=c.caption.trim();c.approved=true;persist();render();toast('Caption approved for export.');});
 listen('assist',()=>{const c=active();if(c)assistant({...c},v=>{if(active()?.id!==c.id)return;caption.value=v;editText();});});
