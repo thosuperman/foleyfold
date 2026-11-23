@@ -8,7 +8,8 @@ Use this together with the [official rules](https://firebasehybridaihackathon.de
 - [x] Set repository Pages source to GitHub Actions.
 - [x] Verify the [public manual studio](https://thosuperman.github.io/foleyfold/) loads without sign-in.
 - [x] Redeploy the configured studio and verify it loads without signing in.
-- [ ] Complete App Check registration for the deployed Web app, verify attestation, and keep judge access available through Dec 16.
+- [x] Owner confirmed App Check Web app registration.
+- [ ] Verify a successful production attestation; the latest registered-client attempt returned 403. Keep judge access available through Dec 16.
 - [ ] Record actual on-device Nano and consented cloud fallback on suitable hardware/account; do not pass an unavailable screen off as inference evidence.
 - [ ] Review exported captions with the intended audience. No accessibility certification claimed.
 - [ ] Review actual gallery and video; upload ≤3-minute English demo publicly to YouTube. Paste actual URL; do not share credentials or identifiable private media.
