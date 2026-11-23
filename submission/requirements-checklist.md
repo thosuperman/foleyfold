@@ -4,9 +4,10 @@ Use this together with the [official rules](https://firebasehybridaihackathon.de
 - [x] New project distinct from Rounds. Rules, fifteen ideas, weighted scores and competitors documented.
 - [x] Web platform, real Firebase AI Logic calls, support for App Check, explicit cloud consent and tracked source.
 - [x] Public GitHub repository with detectable Apache-2.0 license and original sample footage.
-- [ ] Merge the reviewed branch; confirm the code, assets and instructions are on the public default branch.
+- [x] The [reviewed studio](https://github.com/thosuperman/foleyfold/pull/1), assets and instructions are merged into the public default branch.
 - [x] Set repository Pages source to GitHub Actions.
-- [ ] After merging, deploy the dedicated attested build, verify unauthenticated judge access through Dec 16.
+- [x] Verify the [public manual studio](https://thosuperman.github.io/foleyfold/) loads without sign-in.
+- [ ] Redeploy with valid config, verify attestation, and keep judge access available through Dec 16.
 - [ ] Record actual on-device Nano and consented cloud fallback on suitable hardware/account; do not pass an unavailable screen off as inference evidence.
 - [ ] Review exported captions with the intended audience. No accessibility certification claimed.
 - [ ] Review actual gallery and video; upload ≤3-minute English demo publicly to YouTube. Paste actual URL; do not share credentials or identifiable private media.
