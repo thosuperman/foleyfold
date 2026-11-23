@@ -17,8 +17,9 @@ function load(initial:Cue[]){try{savedSnapshot=localStorage.getItem(key);return 
 let cues=load(sampleCues),selected=cues[0]?.id;
 const active=()=>cues.find(c=>c.id===selected);
 let deviceState:Availability|'checking'='checking',probeVersion=0;
+const currentDraftOptions=()=>draftOptions(configured,deviceState,navigator.onLine);
 function showDraftOptions(){
- const {canTry,status,hint}=draftOptions(configured,deviceState,navigator.onLine);
+ const {canTry,status,hint}=currentDraftOptions();
  el('assist').hidden=!canTry;setText('draftStatus',status);setText('draftHint',hint);
 }
 async function checkDraftOptions(){
@@ -79,7 +80,7 @@ let playbackFrame=0;
 function followPlayback(){tick();if(!media.paused&&!media.ended)playbackFrame=requestAnimationFrame(followPlayback);}
 function updatePlay(){cancelAnimationFrame(playbackFrame);followPlayback();el('play').innerHTML=icon(media.paused?'play':'pause');el('play').setAttribute('aria-label',media.paused?'Play film':'Pause film');}
 media.onplay=updatePlay;media.onpause=updatePlay;media.ontimeupdate=tick;media.onseeked=tick;seek.oninput=()=>{media.currentTime=Number(seek.value);tick();};listen('cc',()=>{showCC=!showCC;el('cc').setAttribute('aria-pressed',String(showCC));tick();});listen('mute',()=>{media.muted=!media.muted;el('mute').innerHTML=icon(media.muted?'muted':'sound');el('mute').setAttribute('aria-pressed',String(media.muted));el('mute').setAttribute('aria-label',media.muted?'Unmute sound':'Mute sound');});
-listen('guide',guide);listen('privacy',privacy);listen('export',()=>exportDialog(cues,name));listen('close',()=>modal().close());modal().addEventListener('click',ev=>{if(ev.target===modal()){const r=modal().getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)modal().close();}});
+listen('guide',()=>guide(currentDraftOptions().canTry));listen('privacy',privacy);listen('export',()=>exportDialog(cues,name));listen('close',()=>modal().close());modal().addEventListener('click',ev=>{if(ev.target===modal()){const r=modal().getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)modal().close();}});
 function openPicker(){el<HTMLInputElement>('file').click();}
 function clipDuration(url:string):Promise<number> {
  const probe=document.createElement('video');probe.preload='metadata';
