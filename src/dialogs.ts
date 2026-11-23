@@ -2,9 +2,9 @@ import {configured,draftCaption} from './inference.ts';
 import {deviceAvailability} from './policy.ts';
 import {btn,dialog,el,listen,modal,setText,toast} from './dom.ts';
 import {stamp,validateCue,webVtt,type Cue} from './cues.ts';
-export function guide(){dialog('Field guide',[
+export function guide(canDraft:boolean){dialog('Field guide',[
  ['Spot a sound','Play the original film or open your own local video. Click a timeline segment or cue-sheet row to listen from that moment.'],
- ['Describe what matters','Add a cue at the playhead. Its in and out points can overlap another sound. Describe the sound you hear, not what you see. Write a concise caption, or ask the hybrid model for a draft.'],
+ ['Describe what matters','Add a cue at the playhead. Its in and out points can overlap another sound. Describe what you hear in one concise line in the Sound caption field.'+(canDraft?' For help wording your listening note, choose Draft with AI.':'')],
  ['Review in context','Approve the caption, then replay with CC on. Export VTT downloads only approved lines; unreviewed notes stay here.'],
 ].map(([h,p],i)=>'<div class="guideStep"><span>0'+(i+1)+'</span><div><b>'+h+'</b><p>'+p+'</p></div></div>').join('')+btn('startEditing','Back to the studio'));listen('startEditing',()=>modal().close());}
 export function privacy(){dialog('A private cutting room','<h3>Your footage stays here.</h3><p>Imported clips are opened from your device, never uploaded. Cue notes and captions are saved in this browser, not to an account. Reopen the same file to restore its cues.</p><h3>AI is optional.</h3><p>Only a listening note and cue duration go into the prompt. Device-only mode never sends that prompt to cloud inference. Cloud fallback is a separate choice for each request. When connected, Firebase App Check may contact Google for attestation.</p><h3>On a shared device?</h3><p>Export your work, then clear this site’s browser storage. An open studio can edit offline; a fresh load normally needs a connection.</p>');}

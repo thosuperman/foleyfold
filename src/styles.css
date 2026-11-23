@@ -3,4 +3,11 @@
 #reviewAlert:not(:empty){font-size:13px;margin:0 0 10px;color:#873d24}.draftRoutes{margin:12px 0 0;border-left:2px solid #76856e;padding:2px 0 2px 10px;color:var(--text-muted);font-size:12px;line-height:1.45}.draftRoutes strong{color:#374837}.draftRoutes p+p{margin-top:3px}
 @media(max-width:900px){.width{width:calc(100% - 40px)}.workspace{grid-template-columns:minmax(0,1.45fr) minmax(280px,1fr);gap:12px}.editor #editing{padding:14px}.clock{font-size:10px}.row{grid-template-columns:24px 1fr 110px 1fr 76px}.row>svg{display:none}.brandline{display:none}.top{gap:12px}.picture{aspect-ratio:1.83}.mast{padding-top:28px}}
 @media(max-width:700px){.width{width:calc(100% - 28px)}.top{height:60px}.brand{font-size:28px}.brand img{width:29px;height:29px}nav{margin-left:auto;margin-right:0;gap:15px}nav a{display:none}nav button{font-size:12px}.local span{display:none}.mast{align-items:flex-start;flex-direction:column;padding:24px 0 16px;gap:14px}.mast h1{font-size:46px}.mast p{font-size:14px}.kicker{font-size:9px}.workspace{grid-template-columns:1fr}.picture{aspect-ratio:2.04}.cardhead{padding:10px 14px}.editor #editing{padding:15px}.timeline{padding:12px 14px}.transport{padding:10px}.clock{font-size:10px}.sheet{margin-top:22px}.sheethead{align-items:center}.sheet .actions{flex-direction:column-reverse;gap:3px}.row{grid-template-columns:20px minmax(80px,1fr) auto;gap:6px;padding:10px}.row .excerpt{grid-column:2;grid-row:2;font-size:12px}.row .status{grid-row:2;grid-column:3}.row .mono{font-size:9px}.sheet h2{font-size:32px}.timing{margin-bottom:12px}.brandline{display:none}footer{flex-wrap:wrap}.btn{padding:8px 12px}.clock{margin-left:auto}.mast .actions{width:100%}.mast .actions button{flex:1}}
+@media(max-width:480px){
+ .transport{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:4px 12px}
+ .transport .play{grid-row:1 / span 2}
+ .filmname{grid-column:2 / -1}
+ .filmname strong{white-space:normal;overflow:visible;overflow-wrap:anywhere}
+ .clock{margin-left:0}
+}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
