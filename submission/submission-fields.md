@@ -6,8 +6,8 @@
 - **Platform / category:** Web / Chrome; accessibility, film post-production.
 - **Prize:** Best Web/Chrome; eligible grand prizes subject to organizer review.
 - **Public repository:** https://github.com/thosuperman/foleyfold
-- **Implementation review:** https://github.com/thosuperman/foleyfold/pull/1 (merge before submitting the repository default branch).
-- **Public judging URL:** TODO — use the verified deployment URL from Publish studio after merging. The [organization preview](https://foleyfold--mlarpbwp.preview.devinapps.com) is not a public judging link.
+- **Implementation review:** https://github.com/thosuperman/foleyfold/pull/1 (merged into the public default branch).
+- **Public judging URL:** https://thosuperman.github.io/foleyfold/ — signed-out manual editor; live Firebase inference is not yet verified.
 - **YouTube:** TODO — owner must upload the final reviewed video publicly, in English, then paste its actual watch URL.
 - **Video file and metadata:** [video package](video/); **screens and captions:** [gallery](screenshots/).
 - **Story:** [ready-to-paste narrative](devpost.md). **Install:** [setup](../docs/setup.md). **Evidence / open gates:** [readiness](readiness.md).
